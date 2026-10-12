@@ -106,10 +106,10 @@ export class  UserController {
                     modelo,
                     tipoUnidad: tipoUnidad as TipoUnidad,
                     capacidadPasajeros: Number(capacidadPasajeros),
-                    capacidadCargaKg: capacidadCargaKg ? Number(capacidadCargaKg) : null,
-                    kilometrajeActual: kilometrajeActual ? Number(kilometrajeActual) : 0,
+                    capacidadCargaKg: capacidadCargaKg ? Number(capacidadCargaKg) : 0,
+                    kilometrajeActual: req.body.kilometrajeActual ?? 0,
                     estado: estado as StatusUnidad,
-                    fechaUltMantenimiento: fechaUltMantenimiento ? new Date(fechaUltMantenimiento) : null,
+                    fechaUltMantenimiento: req.body.fechaUltMantenimiento ? new Date(req.body.fechaUltMantenimiento) : new Date(),
                 },
                 select: {
                     id: true,

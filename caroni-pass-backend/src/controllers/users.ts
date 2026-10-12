@@ -53,7 +53,11 @@ export class  UserController {
     }
 
     static async create(req: Request, res: Response): Promise<Response> {
-        const { nombre, email, password, saldo } = req.params;
+        // Aseguramos que vengan del body y sean strings
+        const nombre = req.body.nombre as string;
+        const email = req.body.email as string;
+        const password = req.body.password as string;
+        const saldoInput = req.body.saldo;
 
         if (!nombre || !email || !password) {
             return res.status(400).json({ 
@@ -63,24 +67,24 @@ export class  UserController {
 
         try {
             const existingUser = await prisma.usuario.findUnique({
-                where: { email: email}
+                where: { email }
             });
 
-            if(existingUser){
+            if (existingUser) {
                 return res.status(409).json({ 
                     message: 'El correo electrónico ya se encuentra registrado' 
                 });
             }
 
             const hashedPassword = await bcrypt.hash(password, 10);
+            const parsedSaldo = typeof saldoInput === 'number' ? saldoInput : Number(saldoInput) || 0.0;
 
             const newUser = await prisma.usuario.create({
                 data: {
                     nombre, 
                     email,
                     password: hashedPassword,
-                    saldo: typeof saldo === 'number' ? saldo : 0.0,
-
+                    saldo: parsedSaldo,
                 },
                 select: {
                     id: true,
@@ -89,75 +93,66 @@ export class  UserController {
                     saldo: true,
                     createdAt: true,
                 }
-            })
+            });
             
             return res.status(201).json(newUser);
         } catch (error) {
             console.error('Error al crear usuario:', error);
-
             return res.status(500).json({ 
                 message: 'Error interno del servidor al registrar el usuario' 
             });
         }
     }
 
-    static async login(req: Request, res: Response): Promise<Response>{
-        const { email,  password } = req.params;
+    static async login(req: Request, res: Response): Promise<Response> {
+        const email = (req.body.email || req.params.email) as string;
+        const password = (req.body.password || req.params.password) as string;
 
         if (!email || !password) {
             return res.status(400).json({ 
-                message: 'Los campos "username" y "password" son obligatorios' 
+                message: 'Los campos "email" y "password" son obligatorios' 
             });
         }
 
         try {
             const user = await prisma.usuario.findUnique({
                 where: { email }
-            })
+            });
 
-            if(!user) return res.status(401).json({ message: 'Credenciales inválidas' });
+            if (!user) return res.status(401).json({ message: 'Credenciales inválidas' });
 
             const isValidPassword = await bcrypt.compare(password, user.password);
 
             if (!isValidPassword) {
-            return res.status(401).json({ message: 'Credenciales inválidas' });
+                return res.status(401).json({ message: 'Credenciales inválidas' });
             }
 
             const secret = process.env.ACCESS_TOKEN_SECRET || 'secret_key_default';
             const token = jwt.sign(
-                { 
-                id: user.id, 
-                email: user.email 
-                },
+                { id: user.id, email: user.email },
                 secret,
                 { expiresIn: '24h' }
             );
 
             return res
-                .cookie('access_token', token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-                maxAge: 1000 * 60 * 60 * 24 
-                })
                 .status(200)
                 .json({
-                message: 'Inicio de sesión exitoso',
-                user: {
-                    id: user.id,
-                    nombre: user.nombre,
-                    email: user.email,
-                    saldo: user.saldo
-                }
+                    message: 'Inicio de sesión exitoso',
+                    token,
+                    user: {
+                        id: user.id,
+                        nombre: user.nombre,
+                        email: user.email,
+                        saldo: user.saldo
+                    }
                 });
-
-            } catch (error) {
-                console.error('Error en el proceso de login:', error);
-                return res.status(500).json({ 
-                    message: 'Error interno del servidor al procesar la solicitud' 
-                });
-            }
-        };
+        } catch (error) {
+            console.error('Error en el proceso de login:', error);
+            return res.status(500).json({ 
+                message: 'Error interno del servidor al procesar la solicitud' 
+            });
+        }
+    }
 
 
 }
