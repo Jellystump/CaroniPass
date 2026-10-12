@@ -79,7 +79,7 @@ export class  UserController {
                     nombre, 
                     email,
                     password: hashedPassword,
-                    saldo: typeof saldo === 'number' ? saldo : 0.0,,
+                    saldo: typeof saldo === 'number' ? saldo : 0.0,
 
                 },
                 select: {
