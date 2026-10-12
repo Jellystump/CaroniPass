@@ -1,11 +1,9 @@
 export interface TransactionRequest {
-  readonly transactionId: string;
-  readonly senderWalletId: string;
-  readonly recipientWalletId: string;
-  readonly amount: number;
-  readonly currency: 'USD' | 'USDT' | 'VES' | 'BTC' | 'ETH';
-  readonly type: 'transfer' | 'payment' | 'withdrawal' | 'deposit';
-  readonly description?: string;
-  readonly metadata?: Record<string, unknown>;
-  readonly createdAt: string; 
+  readonly transactionId: string; 
+  readonly usuarioId: string;
+  readonly unidadId: string;
+  readonly monto: number;
+  readonly currency: 'VES' | 'USD';
+  readonly isOffline?: boolean;
+  readonly timestamp: string;   
 }

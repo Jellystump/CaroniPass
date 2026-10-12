@@ -4,8 +4,7 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -13,33 +12,37 @@ datasource db {
 }
 
 model Usuario {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   nombre    String
-  email     String   @unique
-  saldo     Float    @default(0.0)
-  createdAt DateTime @default(now())
+  email     String    @unique
+  password  String
+  saldo     Float     @default(0.0)
+  createdAt DateTime  @default(now())
   cobros    Cobro[]
   recargas  Recarga[]
 }
 
 model Unidad {
-  id      String  @id @default(uuid())
-  placa   String
-  marca   String
-  modelo  String
-  tipoUnidad TipoUnidad 
-  capacidadPasajeros  Int
-  capacidadCargaKg    Float
-  kilometrajeActual   Int
-  estado StatusUnidad
+  id                 String          @id @default(uuid())
+  placa              String          @unique
+  marca              String
+  modelo             String
+  tipoUnidad         TipoUnidad 
+  capacidadPasajeros Int
+  capacidadCargaKg   Float
+  kilometrajeActual  Int
+  estado             StatusUnidad
   fechaUltMantenimiento DateTime 
-  cobros  Cobro[]
+  cobros             Cobro[]
+  telemetrias        Telemetria[]
+
+  @@index([placa])
 }
 
 enum TipoUnidad {
   AUTOBUS
-  CAMIÓN
-  AUTOMÓVIL
+  CAMION
+  AUTOMOVIL
 }
 
 enum StatusUnidad {
@@ -50,17 +53,21 @@ enum StatusUnidad {
 }
 
 model Cobro {
-  id        String   @id @default(uuid())
+  id        String      @id @default(uuid())
   monto     Float
   status    StatusCobro @default(APROBADO_ONLINE)
+  
   usuarioId String
-  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
+  usuario   Usuario     @relation(fields: [usuarioId], references: [id])
+  
   unidadId  String
-  unidad    Unidad   @relation(fields: [unidadId], references: [id])
-  timestamp DateTime @default(now())
+  unidad    Unidad      @relation(fields: [unidadId], references: [id])
+  
+  timestamp DateTime    @default(now())
 
   @@index([usuarioId])
   @@index([unidadId])
+  @@index([timestamp])
 }
 
 enum StatusCobro {
@@ -75,5 +82,20 @@ model Recarga {
   metodo    String
   usuarioId String
   usuario   Usuario  @relation(fields: [usuarioId], references: [id])
-  timestamp DateTime @default (now())
+  timestamp DateTime @default(now())
+
+  @@index([usuarioId])
+}
+
+model Telemetria {
+  id        String   @id @default(uuid())
+  unidadId  String
+  unidad    Unidad   @relation(fields: [unidadId], references: [id])
+  latitud   Float
+  longitud  Float
+  velocidad Float?
+  rumbo     Float?
+  timestamp DateTime @default(now())
+
+  @@index([unidadId, timestamp])
 }
