@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+/* import { Router, Request, Response } from 'express';
 import { prisma } from '../db.js';
 import { TelemetriaPayload } from '../types/TelemetriaPayload.js';
 
@@ -26,5 +26,43 @@ telemetriaRouter.post('/', async (req: Request<{}, {}, TelemetriaPayload>, res: 
   } catch (error) {
     console.error('Error al guardar telemetria:', error);
     return res.status(500).json({ message: 'Error interno al registrar telemetría' });
+  }
+}); */
+import { Router, Request, Response } from 'express';
+import { prisma } from '../lib/prisma.js'; // Ajusta la ruta a tu cliente prisma
+
+export const telemetriaRouter = Router();
+
+// GET: Ver las últimas 20 tramas de telemetría recibidas
+telemetriaRouter.get('/debug/telemetria', async (req: Request, res: Response) => {
+  try {
+    const telemetrias = await prisma.telemetria.findMany({
+      take: 20,
+      orderBy: {
+        timestamp: 'desc',
+      },
+      include: {
+        unidad: {
+          select: {
+            placa: true,
+            marca: true,
+            modelo: true,
+          }
+        }
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      totalRegistros: telemetrias.length,
+      data: telemetrias,
+    });
+  } catch (error) {
+    console.error('Error al obtener telemetría de debug:', error);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error al consultar la telemetría', 
+      error: String(error) 
+    });
   }
 });
