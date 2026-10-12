@@ -7,7 +7,7 @@ import cors from 'cors';
 import 'dotenv/config';
 
 import { telemetriaRouter } from './routes/telemetria.js';
-
+import { unidadRouter } from './routes/unidad.js';
 import { usersRouter } from './routes/user.js';
 
 // Extensión de la interfaz Request de Express para admitir session
@@ -123,6 +123,7 @@ app.get('/register', (req: Request, res: Response) => {
 // Enrutadores de la API
 app.use('/users', usersRouter);
 app.use('/telemetria', telemetriaRouter);
+app.use('/unidades', unidadRouter);
 
 // Cierre de Sesión (Logout)
 app.get('/logout', (req: Request, res: Response) => {
