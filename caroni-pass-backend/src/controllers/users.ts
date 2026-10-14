@@ -163,7 +163,7 @@ export class  UserController {
 
         try {
             const user = await prisma.usuario.findUnique({
-                where: { id: id },
+                where: { id },
                 select: { saldo: true }
             })
 
