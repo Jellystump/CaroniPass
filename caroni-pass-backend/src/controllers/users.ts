@@ -154,5 +154,29 @@ export class  UserController {
         }
     }
 
+    static async getSaldo(req: Request, res: Response): Promise<Response> {
+        const id = req.params;
+
+        if(!id){
+            return res.status(400).json({ message: 'El ID de usuario es requerido' });
+        }
+
+        try {
+            const user = await prisma.usuario.findUnique({
+                where: { id: id },
+                select: { saldo: true }
+            })
+
+            if (user) return res.json(user)
+
+            return res.status(200).json(user);
+        } catch (error) {
+            console.error('Error al obtener el saldo de usuario por ID:', error);
+            
+            return res.status(500).json({ 
+                message: 'Error interno del servidor al consultar el saldo de usuario' 
+            });
+        }
+    }
 
 }
