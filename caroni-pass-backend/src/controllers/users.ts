@@ -154,8 +154,8 @@ export class  UserController {
         }
     }
 
-    static async getSaldo(req: Request, res: Response): Promise<Response> {
-        const id = req.params;
+    static async getSaldo(req: Request<{ id: string }>, res: Response): Promise<Response> {
+        const { id } = req.params;
 
         if(!id){
             return res.status(400).json({ message: 'El ID de usuario es requerido' });
@@ -163,7 +163,7 @@ export class  UserController {
 
         try {
             const user = await prisma.usuario.findUnique({
-                where: { id },
+                where: { id  },
                 select: { saldo: true }
             })
 
