@@ -110,7 +110,7 @@ export class UserController {
         }
     }
 
-    static async update(req: Request<{ id: string }>, res: Response): Promise<Response> {
+   static async update(req: Request<{ id: string }>, res: Response): Promise<Response> {
         const { id } = req.params;
         const { nombre, email, password, saldo } = req.body;
 
@@ -118,7 +118,11 @@ export class UserController {
             const dataToUpdate: any = {};
             if (nombre) dataToUpdate.nombre = nombre;
             if (email) dataToUpdate.email = email;
-            if (password) dataToUpdate.password = await bcrypt.hash(password, 10);
+            
+            if (password && password.trim() !== '' && !password.startsWith('$2b$')) {
+                dataToUpdate.password = await bcrypt.hash(password, 10);
+            }
+
             if (saldo !== undefined) dataToUpdate.saldo = Number(saldo);
 
             const usuarioActualizado = await prisma.usuario.update({
