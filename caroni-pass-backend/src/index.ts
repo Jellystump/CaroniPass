@@ -9,6 +9,8 @@ import 'dotenv/config';
 import { telemetriaRouter } from './routes/telemetria.js';
 import { unidadRouter } from './routes/unidad.js';
 import { usersRouter } from './routes/user.js';
+import recargasRouter from './routes/recargas.js';
+import cobrosRouter from './routes/cobros.js';
 
 // Extensión de la interfaz Request de Express para admitir session
 declare global {
@@ -127,6 +129,8 @@ app.get('/register', (req: Request, res: Response) => {
 app.use('/users', usersRouter);
 app.use('/telemetria', telemetriaRouter);
 app.use('/unidades', unidadRouter);
+app.use('/recargas', recargasRouter);
+app.use('/cobros', cobrosRouter);
 
 // Cierre de Sesión (Logout)
 app.get('/logout', (req: Request, res: Response) => {
