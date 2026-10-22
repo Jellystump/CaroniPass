@@ -13,6 +13,7 @@ datasource db {
 
 model Usuario {
   id        String    @id @default(uuid())
+  tipoUsuario         TipoUsuario @default(PASAJERO)
   nombre    String
   email     String    @unique
   password  String
@@ -20,6 +21,13 @@ model Usuario {
   createdAt DateTime  @default(now())
   cobros    Cobro[]
   recargas  Recarga[]
+}
+
+enum TipoUsuario {
+  PASAJERO
+  CONDUCTOR
+  ADMINISTRADOR
+  INSPECTOR
 }
 
 model Unidad {

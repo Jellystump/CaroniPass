@@ -3,6 +3,8 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma.js';
 
+import { TipoUsuario } from '@prisma/client';
+
 export class UserController {
 
     static async getAll(req: Request, res: Response) {
@@ -36,6 +38,7 @@ export class UserController {
 
     static async create(req: Request, res: Response): Promise<Response> {
         const nombre = req.body.nombre as string;
+        const tipoUsuario = req.body.tipoUsuario as string;
         const email = req.body.email as string;
         const password = req.body.password as string;
         const saldoInput = req.body.saldo;
@@ -54,8 +57,8 @@ export class UserController {
             const parsedSaldo = typeof saldoInput === 'number' ? saldoInput : Number(saldoInput) || 0.0;
 
             const newUser = await prisma.usuario.create({
-                data: { nombre, email, password: hashedPassword, saldo: parsedSaldo },
-                select: { id: true, nombre: true, email: true, saldo: true, createdAt: true }
+                data: { nombre,  tipoUsuario: tipoUsuario as TipoUsuario, email, password: hashedPassword, saldo: parsedSaldo },
+                select: { id: true, nombre: true, tipoUsuario: true, email: true, saldo: true, createdAt: true }
             });
             
             return res.status(201).json(newUser);
@@ -81,12 +84,12 @@ export class UserController {
             if (!isValidPassword) return res.status(401).json({ message: 'Credenciales inválidas' });
 
             const secret = process.env.ACCESS_TOKEN_SECRET || 'secret_key_default';
-            const token = jwt.sign({ id: user.id, email: user.email }, secret, { expiresIn: '24h' });
+            const token = jwt.sign({ id: user.id, tipoUsuario: user.tipoUsuario, email: user.email }, secret, { expiresIn: '24h' });
 
             return res.status(200).json({
                 message: 'Inicio de sesión exitoso',
                 token,
-                user: { id: user.id, nombre: user.nombre, email: user.email, saldo: user.saldo }
+                user: { id: user.id, tipoUsuario: user.tipoUsuario, nombre: user.nombre,  email: user.email, saldo: user.saldo }
             });
         } catch (error) {
             console.error('Error en el proceso de login:', error);
@@ -112,12 +115,13 @@ export class UserController {
 
    static async update(req: Request<{ id: string }>, res: Response): Promise<Response> {
         const { id } = req.params;
-        const { nombre, email, password, saldo } = req.body;
+        const { nombre, tipoUsuario, email, password, saldo } = req.body;
 
         try {
             const dataToUpdate: any = {};
             if (nombre) dataToUpdate.nombre = nombre;
             if (email) dataToUpdate.email = email;
+            if (tipoUsuario) dataToUpdate.tipoUsuario = tipoUsuario as TipoUsuario;
             
             if (password && password.trim() !== '' && !password.startsWith('$2b$')) {
                 dataToUpdate.password = await bcrypt.hash(password, 10);
@@ -128,7 +132,7 @@ export class UserController {
             const usuarioActualizado = await prisma.usuario.update({
                 where: { id },
                 data: dataToUpdate,
-                select: { id: true, nombre: true, email: true, saldo: true }
+                select: { id: true, tipoUsuario: true, nombre: true, email: true, saldo: true }
             });
             return res.status(200).json({ success: true, data: usuarioActualizado });
         } catch (error) {
