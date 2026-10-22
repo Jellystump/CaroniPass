@@ -86,6 +86,13 @@ export class UserController {
             const secret = process.env.ACCESS_TOKEN_SECRET || 'secret_key_default';
             const token = jwt.sign({ id: user.id, tipoUsuario: user.tipoUsuario, email: user.email }, secret, { expiresIn: '24h' });
 
+            res.cookie('token', token, {
+                httpOnly: true,                    
+                secure: process.env.NODE_ENV === 'production', 
+                sameSite: 'lax',                  
+                maxAge: 24 * 60 * 60 * 1000        
+            });
+
             return res.status(200).json({
                 message: 'Inicio de sesión exitoso',
                 token,
