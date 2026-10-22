@@ -61,7 +61,7 @@ export class UnidadController {
     }
 
     static async create(req: Request, res: Response): Promise<Response> {
-        const token = req.cookies.access_token;
+        const token = req.cookies.access_token || req.get('x-access-token');
         if (!token) return res.status(401).json({ message: 'Unauthorized' });
 
         const {
