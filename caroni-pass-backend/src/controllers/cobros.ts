@@ -4,7 +4,7 @@ import { StatusCobro } from '@prisma/client';
 
 export class CobroController {
 
-    // 1. Obtener todos los cobros (con datos clave de usuario y unidad)
+    // Obtener todos los cobros (con datos clave de usuario y unidad)
     static async getAll(req: Request, res: Response): Promise<Response> {
         try {
             const cobros = await prisma.cobro.findMany({
@@ -21,7 +21,22 @@ export class CobroController {
         }
     }
 
-    // 2. Obtener un cobro específico por su ID
+    // 
+    static async getUltimoCobro(req: Request<{ userId: string }>, res: Response): Promise<Response> {
+        const { userId } = req.params;
+        try {
+            const ultimoCobro = await prisma.cobro.findFirst({
+                where: { usuarioId: userId },
+                include: { unidad: { select: { placa: true } } },
+                orderBy: { timestamp: 'desc' },
+            });
+            return res.status(200).json(ultimoCobro);
+        } catch (error) {
+            return res.status(500).json({ message: 'Error al consultar último cobro' });
+        }
+    }
+
+    // Obtener un cobro específico por su ID
     static async getById(req: Request<{ id: string }>, res: Response): Promise<Response> {
         const { id } = req.params;
         if (!id) return res.status(400).json({ message: 'El ID del cobro es requerido' });
@@ -42,7 +57,7 @@ export class CobroController {
         }
     }
 
-    // 3. Crear un nuevo cobro (Valida saldo, descuenta y registra usando una transacción)
+    // Crear un nuevo cobro (Valida saldo, descuenta y registra usando una transacción)
     static async create(req: Request, res: Response): Promise<Response> {
         const userId = req.body.userId as string;
         const unidadId = req.body.unidadId as string;
@@ -103,7 +118,7 @@ export class CobroController {
         }
     }
 
-    // 4. Actualizar un cobro existente
+    // Actualizar un cobro existente
     static async update(req: Request<{ id: string }>, res: Response): Promise<Response> {
         const { id } = req.params;
         const { monto, status } = req.body;
@@ -122,7 +137,7 @@ export class CobroController {
         }
     }
 
-    // 5. Eliminar un registro de cobro
+    // Eliminar un registro de cobro
     static async delete(req: Request<{ id: string }>, res: Response): Promise<Response> {
         const { id } = req.params;
         try {
