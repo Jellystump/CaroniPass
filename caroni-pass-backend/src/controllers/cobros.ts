@@ -4,6 +4,7 @@ import { StatusCobro } from '@prisma/client';
 
 export class CobroController {
 
+    // 1. Obtener todos los cobros (con datos clave de usuario y unidad)
     static async getAll(req: Request, res: Response): Promise<Response> {
         try {
             const cobros = await prisma.cobro.findMany({
@@ -20,6 +21,7 @@ export class CobroController {
         }
     }
 
+    // 2. Obtener un cobro específico por su ID
     static async getById(req: Request<{ id: string }>, res: Response): Promise<Response> {
         const { id } = req.params;
         if (!id) return res.status(400).json({ message: 'El ID del cobro es requerido' });
@@ -40,6 +42,7 @@ export class CobroController {
         }
     }
 
+    // 3. Crear un nuevo cobro (Valida saldo, descuenta y registra usando una transacción)
     static async create(req: Request, res: Response): Promise<Response> {
         const userId = req.body.userId as string;
         const unidadId = req.body.unidadId as string;
@@ -56,16 +59,20 @@ export class CobroController {
         }
 
         try {
+            // Verificar que el usuario exista
             const usuario = await prisma.usuario.findUnique({ where: { id: userId } });
             if (!usuario) return res.status(404).json({ message: 'El usuario especificado no existe' });
 
+            // Validar si el usuario posee saldo suficiente
             if (usuario.saldo < monto) {
                 return res.status(400).json({ message: 'Saldo insuficiente para procesar el viaje/cobro' });
             }
 
+            // Verificar que la unidad de transporte exista
             const unidad = await prisma.unidad.findUnique({ where: { id: unidadId } });
             if (!unidad) return res.status(404).json({ message: 'La unidad de transporte especificada no existe' });
 
+            // Transacción segura: crea el registro de cobro y descuenta el saldo al usuario simultáneamente
             const resultado = await prisma.$transaction(async (tx) => {
                 const nuevoCobro = await tx.cobro.create({
                     data: {
@@ -96,6 +103,7 @@ export class CobroController {
         }
     }
 
+    // 4. Actualizar un cobro existente
     static async update(req: Request<{ id: string }>, res: Response): Promise<Response> {
         const { id } = req.params;
         const { monto, status } = req.body;
@@ -114,6 +122,7 @@ export class CobroController {
         }
     }
 
+    // 5. Eliminar un registro de cobro
     static async delete(req: Request<{ id: string }>, res: Response): Promise<Response> {
         const { id } = req.params;
         try {
