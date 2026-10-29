@@ -23,7 +23,7 @@ export class CobroController {
 
     // 
     static async getUltimoCobro(req: Request<{ id: string }>, res: Response): Promise<Response> {
-        const { id } = req.params; // Cambiado de userId a id para coincidir con /last/:id
+        const { id } = req.params; 
         try {
             const ultimoCobro = await prisma.cobro.findFirst({
                 where: { usuarioId: id },
