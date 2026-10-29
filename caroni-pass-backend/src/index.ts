@@ -10,7 +10,7 @@ import { telemetriaRouter } from './routes/telemetria.js';
 import { unidadRouter } from './routes/unidad.js';
 import { usersRouter } from './routes/user.js';
 import recargasRouter from './routes/recargas.js';
-import cobrosRouter from './routes/cobros.js';
+import { cobrosRouter } from './routes/cobros.js';
 
 // Extensión de la interfaz Request de Express para admitir session
 declare global {
