@@ -21,7 +21,7 @@ export class CobroController {
         }
     }
 
-    // 
+    // Ultimo cobro
     static async getUltimoCobro(req: Request<{ id: string }>, res: Response): Promise<Response> {
         const { id } = req.params; 
         try {
@@ -33,6 +33,21 @@ export class CobroController {
             return res.status(200).json(ultimoCobro);
         } catch (error) {
             return res.status(500).json({ message: 'Error al consultar último cobro' });
+        }
+    }
+
+    // Listado de cobros por id de usuario
+    static async getUserCobros(req: Request<{ id: string }>, res: Response): Promise<Response> {
+        const { id } = req.params; 
+        try {
+            const userCobros = await prisma.cobro.findMany({
+                where: { usuarioId: id },
+                include: { unidad: { select: { placa: true } } },
+                orderBy: { timestamp: 'desc' },
+            });
+            return res.status(200).json(userCobros);
+        } catch (error) {
+            return res.status(500).json({ message: 'Error al consultar listado de cobros' });
         }
     }
 
